@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 
 plot_fname = "myplot.png"
 
-fname = "sample_data_3vars.csv"
+fname = "runtime.csv"
 df = pd.read_csv(fname, comment="#")
 print(df)
 

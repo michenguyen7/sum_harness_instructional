@@ -14,6 +14,7 @@
 #include <vector>
 #include <string.h>
 
+#include <unistd.h>
 
 extern void setup(int64_t N, uint64_t A[]);
 extern int64_t sum(int64_t N, uint64_t A[]);
@@ -21,7 +22,7 @@ extern int64_t sum(int64_t N, uint64_t A[]);
 /* The benchmarking program */
 int main(int argc, char** argv) 
 {
-   std::cout << std::fixed << std::setprecision(2);
+   std::cout << std::fixed << std::setprecision(6);
 
 #define MAX_PROBLEM_SIZE 1 << 28  //  256M
    std::vector<int64_t> problem_sizes{ MAX_PROBLEM_SIZE >> 5, MAX_PROBLEM_SIZE >> 4, MAX_PROBLEM_SIZE >> 3, MAX_PROBLEM_SIZE >> 2, MAX_PROBLEM_SIZE >> 1, MAX_PROBLEM_SIZE};
@@ -41,10 +42,18 @@ int main(int argc, char** argv)
 
       // insert your timer code here
 
+      std::chrono::time_point<std::chrono::high_resolution_clock> start_time = std::chrono::high_resolution_clock::now();
+
       // invoke method to perform the sum
       t = sum(n, &A[0]);
 
       // insert your end timer code here, and print out elapsed time for this problem size
+
+      std::chrono::time_point<std::chrono::high_resolution_clock> end_time = std::chrono::high_resolution_clock::now();
+
+      std::chrono::duration<double> elapsed = end_time - start_time;
+
+      std::cout << " Elapsed time is : " << elapsed.count() << " " << std::endl;
 
       printf(" Sum result = %lld \n",t);
 
