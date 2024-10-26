@@ -19,7 +19,7 @@ Assumptions: developed and tested using Python version 3.8.8 on macOS 11.6
 import pandas as pd
 import matplotlib.pyplot as plt
 
-# getting my CSV data
+# Getting my CSV data
 fname = "ellerun.csv"
 df = pd.read_csv(fname, comment="#")
 print(df)
@@ -27,16 +27,17 @@ print(df)
 var_names = list(df.columns)
 print("var names =", var_names)
 
+# Extracting relevant data from the dataframe
 problem_sizes = df[var_names[0]].values.tolist()
 direct_sum_time = df[var_names[1]].values.tolist()
 vector_sum_time = df[var_names[2]].values.tolist()
 indirect_sum_time = df[var_names[3]].values.tolist()
 
-
+# Constants
 OPS_BASELINE = 1e6 
-MEM_CAPACITY = 204.8 * 1024 * 1024 * 1024  
+MEM_CAPACITY = 204.8 * 1024 * 1024 * 1024  # Peak memory bandwidth in bytes/s
 
-# lists for MFLOPS, memory bandwidth, and memory latency
+# Lists for MFLOPS, memory bandwidth, and memory latency
 mflops_direct, mflops_vector, mflops_indirect = [], [], []
 mem_bw_direct, mem_bw_vector, mem_bw_indirect = [], [], []
 latency_direct, latency_vector, latency_indirect = [], [], []
@@ -49,9 +50,9 @@ for size, t1, t2, t3 in zip(problem_sizes, direct_sum_time, vector_sum_time, ind
 
 # Memory Bandwidth calculation
 for size, t1, t2, t3 in zip(problem_sizes, direct_sum_time, vector_sum_time, indirect_sum_time):
-    mem_bw_direct.append((size * 4 / t1) / MEM_CAPACITY)
-    mem_bw_vector.append((size * 2 * 4 / t2) / MEM_CAPACITY)
-    mem_bw_indirect.append((size * 3 * 4 / t3) / MEM_CAPACITY)
+    mem_bw_direct.append((size * 4 / t1) / MEM_CAPACITY * 100)  # Convert to percentage
+    mem_bw_vector.append((size * 2 * 4 / t2) / MEM_CAPACITY * 100)  # Convert to percentage
+    mem_bw_indirect.append((size * 3 * 4 / t3) / MEM_CAPACITY * 100)  # Convert to percentage
 
 # Memory Latency calculation
 for size, t1, t2, t3 in zip(problem_sizes, direct_sum_time, vector_sum_time, indirect_sum_time):
