@@ -27,9 +27,9 @@ OPS = 1e6
 #plot_fname = "getplot.png"
 #fname = "sample_data_3vars.csv"
 
-plot_fname_mflops = "mflops_plot.png"
-plot_fname_mem_bw = "memory_bandwidth_plot.png"
-plot_fname_mem_latency = "memory_latency_plot.png"
+plot_fname_mflops = "mflopsplot.png"
+plot_fname_mem_bw = "bandwidthplot.png"
+plot_fname_mem_latency = "latencyplot.png"
 
 fname = "ellerun.csv"
 df = pd.read_csv(fname, comment="#")
@@ -46,22 +46,21 @@ elapsed_times_direct = df['sum_direct'].values.tolist()
 elapsed_times_indirect = df['sum_indirect'].values.tolist()
 elapsed_times_vector = df['sum_vector'].values.tolist()
 
-# Calculate MFLOP/s
+# MFLOP/s calculations
 mflops_direct = [(OPS / time) for time in elapsed_times_direct]
 mflops_indirect = [(OPS / time) for time in elapsed_times_indirect]
 mflops_vector = [(OPS / time) for time in elapsed_times_vector]
 
-# Calculate Memory Bandwidth Utilization (%)
+# Bandwidth calculations
 memory_bandwidth_direct = [(BYTES_ACCESSED / time) / PEAK_MEMORY_BANDWIDTH * 100 for time in elapsed_times_direct]
 memory_bandwidth_indirect = [(BYTES_ACCESSED / time) / PEAK_MEMORY_BANDWIDTH * 100 for time in elapsed_times_indirect]
 memory_bandwidth_vector = [(BYTES_ACCESSED / time) / PEAK_MEMORY_BANDWIDTH * 100 for time in elapsed_times_vector]
 
-# Calculate Memory Latency
+# Memory Latency calculations
 memory_latency_direct = [time / MEMORY_ACCESSES for time in elapsed_times_direct]
 memory_latency_indirect = [time / MEMORY_ACCESSES for time in elapsed_times_indirect]
 memory_latency_vector = [time / MEMORY_ACCESSES for time in elapsed_times_vector]
 
-# Plot MFLOP/s
 plt.figure()
 plt.plot(problem_sizes, mflops_direct, label='Direct', marker='o', color='red')
 plt.plot(problem_sizes, mflops_indirect, label='Indirect', marker='x', color='blue')
@@ -72,9 +71,8 @@ plt.ylabel('MFLOP/s')
 plt.legend()
 plt.grid(axis='both')
 plt.savefig(plot_fname_mflops, dpi=300)
-plt.close()  # Close the figure after saving
+plt.close() 
 
-# Plot Memory Bandwidth Utilization
 plt.figure()
 plt.plot(problem_sizes, memory_bandwidth_direct, label='Direct', marker='o', color='red')
 plt.plot(problem_sizes, memory_bandwidth_indirect, label='Indirect', marker='x', color='blue')
@@ -85,9 +83,8 @@ plt.ylabel('Memory Bandwidth Utilization (%)')
 plt.legend()
 plt.grid(axis='both')
 plt.savefig(plot_fname_mem_bw, dpi=300)
-plt.close()  # Close the figure after saving
+plt.close() 
 
-# Plot Memory Latency
 plt.figure()
 plt.plot(problem_sizes, memory_latency_direct, label='Direct', marker='o', color='red')
 plt.plot(problem_sizes, memory_latency_indirect, label='Indirect', marker='x', color='blue')
@@ -98,8 +95,8 @@ plt.ylabel('Memory Latency')
 plt.legend()
 plt.grid(axis='both')
 plt.savefig(plot_fname_mem_latency, dpi=300)
-plt.close()  # Close the figure after saving
+plt.close()
 
-plt.show()  # Show all plots at once, if needed
+plt.show()  
 
 # EOF
