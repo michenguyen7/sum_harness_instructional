@@ -19,119 +19,87 @@ Assumptions: developed and tested using Python version 3.8.8 on macOS 11.6
 import pandas as pd
 import matplotlib.pyplot as plt
 
-
+# getting my CSV data
 fname = "ellerun.csv"
 df = pd.read_csv(fname, comment="#")
 print(df)
 
 var_names = list(df.columns)
-
 print("var names =", var_names)
 
-# split the df into individual vars
-# assumption: column order - 0=problem size, 1=blas time, 2=basic time
-
 problem_sizes = df[var_names[0]].values.tolist()
-code1_time = df[var_names[1]].values.tolist()
-code2_time = df[var_names[2]].values.tolist()
-code3_time = df[var_names[3]].values.tolist()
+direct_sum_time = df[var_names[1]].values.tolist()
+vector_sum_time = df[var_names[2]].values.tolist()
+indirect_sum_time = df[var_names[3]].values.tolist()
 
-# Code 1: Direct Sum, Code 2: Vector Sum, Code 3: Indirect Sum
-# Mflops code:
-code1_mflops = []
-code2_mflops = []
-code3_mflops = []
 
-for x in problem_sizes:
-    for y in code1_time:
-        code1_mflops.append((2*x/1000000)/y)
+OPS_BASELINE = 1e6 
+MEM_CAPACITY = 204.8 * 1024 * 1024 * 1024  
 
-for x in problem_sizes:
-    for y in code2_time:
-        code2_mflops.append((3*x/1000000)/y)
+# lists for MFLOPS, memory bandwidth, and memory latency
+mflops_direct, mflops_vector, mflops_indirect = [], [], []
+mem_bw_direct, mem_bw_vector, mem_bw_indirect = [], [], []
+latency_direct, latency_vector, latency_indirect = [], [], []
 
-for x in problem_sizes:
-    for y in code3_time:
-        code3_mflops.append((4*x/1000000)/y)
+# MFLOPS calculation
+for size, t1, t2, t3 in zip(problem_sizes, direct_sum_time, vector_sum_time, indirect_sum_time):
+    mflops_direct.append((2 * size / OPS_BASELINE) / t1)
+    mflops_vector.append((3 * size / OPS_BASELINE) / t2)
+    mflops_indirect.append((4 * size / OPS_BASELINE) / t3)
 
-# Memory Bandwidth code:
-code1_mem_bw = []
-code2_mem_bw = []
-code3_mem_bw = []
+# Memory Bandwidth calculation
+for size, t1, t2, t3 in zip(problem_sizes, direct_sum_time, vector_sum_time, indirect_sum_time):
+    mem_bw_direct.append((size * 4 / t1) / MEM_CAPACITY)
+    mem_bw_vector.append((size * 2 * 4 / t2) / MEM_CAPACITY)
+    mem_bw_indirect.append((size * 3 * 4 / t3) / MEM_CAPACITY)
 
-capacity = 204.8 * 1024 * 1024 * 1024
-for x in problem_sizes:
-    for y in code1_time:
-        code1_mem_bw.append((x*4/y)/(capacity))
+# Memory Latency calculation
+for size, t1, t2, t3 in zip(problem_sizes, direct_sum_time, vector_sum_time, indirect_sum_time):
+    latency_direct.append(t1 / size)
+    latency_vector.append(t2 / (2 * size))
+    latency_indirect.append(t3 / (3 * size))
 
-for x in problem_sizes:
-    for y in code2_time:
-        code2_mem_bw.append((x*2*4/y)/(capacity))
+# x-axis positions and labels
+x_positions = list(range(len(problem_sizes)))
+labels = [var_names[1], var_names[2], var_names[3]]
 
-for x in problem_sizes:
-    for y in code3_time:
-        code3_mem_bw.append((x*3*4/y)/(capacity))
-
-# Memory Latency code:
-code1_mem_latency = []
-code2_mem_latency = []
-code3_mem_latency = []
-
-for x in problem_sizes:
-    for y in code1_time:
-        code1_mem_latency.append(y/x)
-
-for x in problem_sizes:
-    for y in code2_time:
-        code2_mem_latency.append(y/(2*x))
-
-for x in problem_sizes:
-    for y in code3_time:
-        code3_mem_latency.append(y/(3*x))
-
-# Customize x-axis ticks
-xlocs = [i for i in range(len(problem_sizes))]
-
-# Define legend labels
-varNames = [var_names[1], var_names[2], var_names[3]]
-
-# Plot for MFLOPS
+# Plot MFLOPS
 plt.figure(figsize=(10, 6))
-plt.title("Comparison of 3 Codes (MFLOPS)")
-plt.plot(xlocs, code1_mflops, "r-o")
-plt.plot(xlocs, code2_mflops, "b-x")
-plt.plot(xlocs, code3_mflops, "g-^")
-plt.xticks(xlocs, problem_sizes)
+plt.plot(x_positions, mflops_direct, "r-o", label=labels[0])
+plt.plot(x_positions, mflops_vector, "b-x", label=labels[1])
+plt.plot(x_positions, mflops_indirect, "g-^", label=labels[2])
+plt.xticks(x_positions, problem_sizes)
+plt.title("MFLOP/s Comparison for Direct, Vector, and Indirect Sum")
 plt.xlabel("Problem Sizes")
-plt.ylabel("MFLOPS")
-plt.legend(varNames, loc="best")  # Add legend
-plt.grid(axis='both')  # Enable grid lines
+plt.ylabel("MFLOP/s")
+plt.legend(loc="best")
+plt.grid(True)
 plt.show()
 
-# Plot for Memory Bandwidth
+# Plot Memory Bandwidth
 plt.figure(figsize=(10, 6))
-plt.title("Comparison of 3 Codes (Memory Bandwidth)")
-plt.plot(xlocs, code1_mem_bw, "r-o")
-plt.plot(xlocs, code2_mem_bw, "b-x")
-plt.plot(xlocs, code3_mem_bw, "g-^")
-plt.xticks(xlocs, problem_sizes)
+plt.plot(x_positions, mem_bw_direct, "r-o", label=labels[0])
+plt.plot(x_positions, mem_bw_vector, "b-x", label=labels[1])
+plt.plot(x_positions, mem_bw_indirect, "g-^", label=labels[2])
+plt.xticks(x_positions, problem_sizes)
+plt.title("Memory Bandwidth Comparison for Direct, Vector, and Indirect Sum")
 plt.xlabel("Problem Sizes")
-plt.ylabel("Memory Bandwidth")
-plt.legend(varNames, loc="best")  # Add legend
-plt.grid(axis='both')  # Enable grid lines
+plt.ylabel("Memory Bandwidth Utilization (%)")
+plt.legend(loc="best")
+plt.grid(True)
 plt.show()
 
-# Plot for Memory Latency
+# Plot Memory Latency
 plt.figure(figsize=(10, 6))
-plt.title("Comparison of 3 Codes (Memory Latency)")
-plt.plot(xlocs, code1_mem_latency, "r-o")
-plt.plot(xlocs, code2_mem_latency, "b-x")
-plt.plot(xlocs, code3_mem_latency, "g-^")
-plt.xticks(xlocs, problem_sizes)
+plt.plot(x_positions, latency_direct, "r-o", label=labels[0])
+plt.plot(x_positions, latency_vector, "b-x", label=labels[1])
+plt.plot(x_positions, latency_indirect, "g-^", label=labels[2])
+plt.xticks(x_positions, problem_sizes)
+plt.title("Memory Latency Comparison for Direct, Vector, and Indirect Sum")
 plt.xlabel("Problem Sizes")
 plt.ylabel("Memory Latency")
-plt.legend(varNames, loc="best")  # Add legend
-plt.grid(axis='both')  # Enable grid lines
+plt.legend(loc="best")
+plt.grid(True)
 plt.show()
 
 # EOF
